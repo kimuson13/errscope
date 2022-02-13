@@ -2,6 +2,7 @@ package errscope
 
 import (
 	"go/ast"
+	"go/types"
 
 	"golang.org/x/tools/go/analysis"
 	"golang.org/x/tools/go/analysis/passes/inspect"
@@ -47,7 +48,8 @@ func run(pass *analysis.Pass) (interface{}, error) {
 
 			for _, expr := range n.Lhs {
 				typ := pass.TypesInfo.TypeOf(expr)
-				if typ.String() == "error" {
+				errType := types.Universe.Lookup("error").Type()
+				if types.Identical(typ, errType) {
 					pass.Reportf(n.Pos(), "this error type can be narrowed in scope")
 				}
 			}
