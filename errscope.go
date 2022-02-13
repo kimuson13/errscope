@@ -8,7 +8,7 @@ import (
 	"golang.org/x/tools/go/ast/inspector"
 )
 
-const doc = "errscope is ..."
+const doc = "errscope is analyzing whether the scope of the error type can be narrowed"
 
 // Analyzer is ...
 var Analyzer = &analysis.Analyzer{
@@ -24,14 +24,32 @@ func run(pass *analysis.Pass) (interface{}, error) {
 	inspect := pass.ResultOf[inspect.Analyzer].(*inspector.Inspector)
 
 	nodeFilter := []ast.Node{
-		(*ast.Ident)(nil),
+		(*ast.AssignStmt)(nil),
+		(*ast.IfStmt)(nil),
 	}
 
+	assignStmtMap := make(map[*ast.AssignStmt]int)
 	inspect.Preorder(nodeFilter, func(n ast.Node) {
 		switch n := n.(type) {
-		case *ast.Ident:
-			if n.Name == "gopher" {
-				pass.Reportf(n.Pos(), "identifier is gopher")
+		case *ast.IfStmt:
+			a, ok := n.Init.(*ast.AssignStmt)
+			if ok {
+				assignStmtMap[a]++
+			}
+		case *ast.AssignStmt:
+			if len(n.Lhs) != len(n.Rhs) {
+				return
+			}
+
+			if _, ok := assignStmtMap[n]; ok {
+				return
+			}
+
+			for _, expr := range n.Lhs {
+				typ := pass.TypesInfo.TypeOf(expr)
+				if typ.String() == "error" {
+					pass.Reportf(n.Pos(), "this error type can be narrowed in scope")
+				}
 			}
 		}
 	})
