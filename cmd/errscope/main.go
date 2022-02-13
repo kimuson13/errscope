@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/kimuson13/errscope"
-	"golang.org/x/tools/go/analysis/unitchecker"
+	"golang.org/x/tools/go/analysis/singlechecker"
 )
 
-func main() { unitchecker.Main(errscope.Analyzer) }
+func main() { singlechecker.Main(errscope.Analyzer) }
