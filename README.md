@@ -1,4 +1,4 @@
-# errscope
+# errscope [![Go Reference](https://pkg.go.dev/badge/github.com/kimuson13/errscope#section-readme.svg)](https://pkg.go.dev/github.com/kimuson13/errscope#section-readme)
 `errscope` finds code which can narrow the scope of error type.  
 ```
 func f() error {
